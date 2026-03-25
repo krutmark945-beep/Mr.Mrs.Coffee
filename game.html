@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Свари кофе — Mr. & Mrs. Coffee</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --cream: #FDF6EE;
+            --cream-light: #FFFCF7;
+            --brown-dark: #2C1810;
+            --brown: #3D2B1F;
+            --brown-mid: #5C4033;
+            --brown-light: #6B4F3A;
+            --terracotta: #C4754B;
+            --terracotta-light: #D4956A;
+            --terracotta-dark: #A85D3A;
+            --sand: #E8DDD4;
+            --peach: #F5E6D3;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--cream);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--brown);
+            text-decoration: none;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 18px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(61,43,31,0.1);
+            transition: 0.3s;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            background: var(--terracotta);
+            color: white;
+        }
+
+        .header {
+            text-align: center;
+            margin: 40px 0 30px;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            color: var(--brown);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--brown-mid);
+            font-size: 1.05rem;
+        }
+
+        .game-container {
+            background: var(--cream-light);
+            border-radius: 32px;
+            padding: clamp(25px, 5vw, 50px);
+            box-shadow: 0 20px 60px rgba(61,43,31,0.08);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid var(--sand);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .step-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--sand);
+            transition: 0.5s;
+        }
+
+        .step-dot.active {
+            background: var(--terracotta);
+            transform: scale(1.3);
+        }
+
+        .step-dot.done {
+            background: var(--brown-mid);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--sand);
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--terracotta), var(--terracotta-light));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.8s ease;
+        }
+
+        .step-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--brown);
+            margin-bottom: 12px;
+        }
+
+        .step-text {
+            font-size: 1rem;
+            color: var(--brown-mid);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        /* ===== ILLUSTRATION AREA ===== */
+        .illustration-area {
+            width: 100%;
+            max-width: 350px;
+            height: 280px;
+            margin: 0 auto 25px;
+            position: relative;
+            background: linear-gradient(180deg, var(--peach) 0%, var(--cream) 100%);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        /* ===== BARISTA (SVG illustration) ===== */
+        .barista-scene {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .barista-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== COFFEE MACHINE (Flat style) ===== */
+        .machine-flat {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 160px;
+        }
+
+        .machine-body-flat {
+            width: 180px;
+            height: 100px;
+            background: var(--brown);
+            border-radius: 16px 16px 8px 8px;
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            box-shadow: 0 8px 20px rgba(61,43,31,0.2);
+        }
+
+        .machine-top-flat {
+            width: 140px;
+            height: 30px;
+            background: var(--brown-mid);
+            border-radius: 12px 12px 0 0;
+            position: absolute;
+            bottom: 130px;
+            left: 30px;
+        }
+
+        .machine-base-flat {
+            width: 200px;
+            height: 30px;
+            background: var(--brown-dark);
+            border-radius: 8px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .machine-btn-flat {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            z-index: 5;
+        }
+
+        .machine-btn-flat.espresso-btn {
+            background: var(--terracotta);
+        }
+
+        .machine-btn-flat.milk-btn {
+            background: var(--peach);
+            color: var(--brown);
+        }
+
+        .machine-btn-flat:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 20px rgba(196,117,75,0.4);
+        }
+
+        .machine-btn-flat:active {
+            transform: scale(0.95);
+        }
+
+        .machine-btn-flat:disabled {
+            background: var(--sand);
+            color: var(--brown-light);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .machine-spout-flat {
+            width: 40px;
+            height: 30px;
+            background: var(--brown-dark);
+            position: absolute;
+            bottom: 60px;
+            left: 80px;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .machine-drip-flat {
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 0;
+            background: var(--brown);
+            border-radius: 3px;
+            transition: height 0.5s;
+        }
+
+        .machine-drip-flat.pouring {
+            height: 25px;
+            animation: drip-flat 0.6s infinite;
+        }
+
+        @keyframes drip-flat {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ===== CUP (Flat style) ===== */
+        .cup-flat {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 80px;
+            background: var(--cream-light);
+            border: 4px solid var(--brown-light);
+            border-radius: 0 0 50px 50px;
+            overflow: hidden;
+        }
+
+        .cup-handle-flat {
+            position: absolute;
+            right: -28px;
+            top: 15px;
+            width: 28px;
+            height: 40px;
+            border: 4px solid var(--brown-light);
+            border-left: none;
+            border-radius: 0 20px 20px 0;
+        }
+
+        .coffee-fill-flat {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(180deg, var(--brown-light) 0%, var(--brown-dark) 100%);
+            transition: height 1.5s ease;
+            border-radius: 0 0 46px 46px;
+        }
+
+        .coffee-fill-flat.pouring {
+            height: 75%;
+        }
+
+        .foam-flat {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: var(--peach);
+            transition: height 0.5s ease 0.8s;
+            border-radius: 0 0 46px 46px;
+            z-index: 2;
+        }
+
+        .foam-flat.show {
+            height: 25%;
+        }
+
+        .steam-flat-container {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 30px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .steam-flat-container.show {
+            opacity: 1;
+        }
+
+        .steam-flat {
+            position: absolute;
+            width: 10px;
+            height: 18px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 50%;
+            animation: steam-up 2s infinite;
+        }
+
+        .steam-flat:nth-child(1) { left: 8px; animation-delay: 0s; }
+        .steam-flat:nth-child(2) { left: 25px; animation-delay: 0.6s; }
+        .steam-flat:nth-child(3) { left: 42px; animation-delay: 1.2s; }
+
+        @keyframes steam-up {
+            0% { transform: translateY(0) scale(1); opacity: 0.7; }
+            100% { transform: translateY(-25px) scale(1.4); opacity: 0; }
+        }
+
+        /* ===== BEANS (Flat style) ===== */
+        .beans-area {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        .bean-flat {
+            width: 50px;
+            height: 35px;
+            background: var(--brown);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(61,43,31,0.2);
+        }
+
+        .bean-flat::after {
+            content: '';
+            width: 3px;
+            height: 22px;
+            background: var(--brown-dark);
+            border-radius: 2px;
+        }
+
+        .bean-flat:hover {
+            transform: scale(1.15) rotate(8deg);
+            box-shadow: 0 6px 20px rgba(61,43,31,0.3);
+        }
+
+        .bean-flat.collected {
+            animation: bean-collect 0.5s ease forwards;
+        }
+
+        @keyframes bean-collect {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        /* ===== GRINDER (Flat style) ===== */
+        .grinder-flat {
+            width: 100px;
+            height: 130px;
+            margin: 0 auto;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .grinder-flat:hover, .grinder-flat.working {
+            transform: scale(1.05);
+        }
+
+        .grinder-flat.working .grinder-crank {
+            animation: crank-turn 1.5s linear infinite;
+        }
+
+        .grinder-hopper {
+            width: 50px;
+            height: 35px;
+            background: var(--brown-mid);
+            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+            margin: 0 auto;
+        }
+
+        .grinder-neck {
+            width: 30px;
+            height: 15px;
+            background: var(--brown);
+            margin: 0 auto;
+        }
+
+        .grinder-body-flat {
+            width: 80px;
+            height: 50px;
+            background: linear-gradient(180deg, var(--brown) 0%, var(--brown-dark) 100%);
+            border-radius: 8px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grinder-crank {
+            width: 60px;
+            height: 8px;
+            background: var(--terracotta);
+            border-radius: 4px;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .grinder-crank::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -4px;
+            width: 16px;
+            height: 16px;
+            background: var(--terracotta-dark);
+            border-radius: 50%;
+        }
+
+        .grinder-flat:hover .grinder-crank {
+            animation: crank-turn 1.5s linear infinite;
+        }
+
+        @keyframes crank-turn {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .grinder-ground-flat {
+            width: 50px;
+            height: 25px;
+            background: var(--brown-light);
+            border-radius: 0 0 8px 8px;
+            margin: 0 auto;
+            opacity: 0;
+            transition: opacity 1.5s;
+        }
+
+        .grinder-ground-flat.show {
+            opacity: 1;
+        }
+
+        /* ===== PORTAFILTER (Flat style) ===== */
+        .portafilter-flat {
+            width: 140px;
+            height: 80px;
+            margin: 20px auto;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .portafilter-flat:hover {
+            transform: scale(1.05);
+        }
+
+        .portafilter-basket-flat {
+            width: 100px;
+            height: 50px;
+            background: #8B7355;
+            border-radius: 0 0 50px 50px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .portafilter-grounds-flat {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: var(--brown);
+            transition: height 0.8s ease;
+            border-radius: 0 0 50px 50px;
+            box-shadow: inset 0 -5px 10px rgba(0,0,0,0.3);
+        }
+
+        .portafilter-grounds-flat.filled {
+            height: 80%;
+        }
+
+        .portafilter-handle-flat {
+            position: absolute;
+            right: -10px;
+            top: 20px;
+            width: 60px;
+            height: 14px;
+            background: var(--brown-dark);
+            border-radius: 7px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .action-btn {
+            background: var(--terracotta);
+            color: white;
+            border: none;
+            padding: 16px 45px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        .action-btn:hover {
+            background: var(--brown);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(61,43,31,0.2);
+        }
+
+        .action-btn:disabled {
+            background: var(--sand);
+            color: var(--brown-light);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .score {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--terracotta);
+            margin: 15px 0;
+        }
+
+        /* ===== COMPLETE ===== */
+        .complete-screen {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .complete-screen.show {
+            display: block;
+            animation: fade-up 1s ease;
+        }
+
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .complete-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .complete-screen h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--brown);
+            margin-bottom: 12px;
+        }
+
+        .complete-screen p {
+            color: var(--brown-mid);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--brown);
+            border: 2px solid var(--brown);
+        }
+
+        .btn-secondary:hover {
+            background: var(--brown);
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            .illustration-area { height: 240px; }
+            .machine-body-flat { width: 150px; gap: 12px; }
+            .machine-btn-flat { width: 38px; height: 38px; font-size: 10px; }
+            .cup-flat { width: 80px; height: 65px; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">
+        <i class="fas fa-arrow-left"></i> На главную
+    </a>
+
+    <div class="header">
+        <h1>Свари свой кофе</h1>
+        <p>Помоги бариста приготовить идеальную чашку!</p>
+    </div>
+
+    <div class="game-container">
+        <div class="step-indicator">
+            <div class="step-dot active" id="dot1"></div>
+            <div class="step-dot" id="dot2"></div>
+            <div class="step-dot" id="dot3"></div>
+            <div class="step-dot" id="dot4"></div>
+            <div class="step-dot" id="dot5"></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <!-- Step 1: Collect beans -->
+        <div class="game-step" id="step1">
+            <div class="step-title">Собери зёрна</div>
+            <div class="step-text">Нажми на каждое зёрнышко, чтобы собрать их для помола</div>
+            <div class="illustration-area">
+                <div class="beans-area" id="beansContainer">
+                    <div class="bean-flat" onclick="collectBean(this)"></div>
+                    <div class="bean-flat" onclick="collectBean(this)"></div>
+                    <div class="bean-flat" onclick="collectBean(this)"></div>
+                    <div class="bean-flat" onclick="collectBean(this)"></div>
+                    <div class="bean-flat" onclick="collectBean(this)"></div>
+                </div>
+            </div>
+            <div class="score" id="beanScore">0 / 5</div>
+        </div>
+
+        <!-- Step 2: Grind -->
+        <div class="game-step" id="step2" style="display:none;">
+            <div class="step-title">Помоли зёрна</div>
+            <div class="step-text">Нажми на кофемолку, чтобы перемолоть зёрна</div>
+            <div class="illustration-area">
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;">
+                    <div class="grinder-flat" id="grinderFlat" onclick="grindCoffee()">
+                        <div class="grinder-hopper"></div>
+                        <div class="grinder-neck"></div>
+                        <div class="grinder-body-flat">
+                            <div class="grinder-crank"></div>
+                        </div>
+                        <div class="grinder-ground-flat" id="grinderGround"></div>
+                    </div>
+                </div>
+            </div>
+            <button class="action-btn" id="grindBtn" disabled onclick="goToStep(3)">Далее</button>
+        </div>
+
+        <!-- Step 3: Fill portafilter -->
+        <div class="game-step" id="step3" style="display:none;">
+            <div class="step-title">Засыпь в холдер</div>
+            <div class="step-text">Нажми на портафилтер, чтобы заполнить его молотым кофе</div>
+            <div class="illustration-area">
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;">
+                    <div class="portafilter-flat" onclick="fillPortafilter()">
+                        <div class="portafilter-basket-flat">
+                            <div class="portafilter-grounds-flat" id="portafilterGrounds"></div>
+                        </div>
+                        <div class="portafilter-handle-flat"></div>
+                    </div>
+                </div>
+            </div>
+            <button class="action-btn" id="fillBtn" disabled onclick="goToStep(4)">Далее</button>
+        </div>
+
+        <!-- Step 4: Brew -->
+        <div class="game-step" id="step4" style="display:none;">
+            <div class="step-title">Завари кофе</div>
+            <div class="step-text">Нажми кнопку ESP, затем добавь молоко</div>
+            <div class="illustration-area">
+                <div class="machine-flat">
+                    <div class="machine-top-flat"></div>
+                    <div class="machine-body-flat">
+                        <button class="machine-btn-flat espresso-btn" onclick="brewCoffee()">ESP</button>
+                        <button class="machine-btn-flat milk-btn" onclick="addMilk()" id="milkBtn" disabled>МЛК</button>
+                    </div>
+                    <div class="machine-spout-flat">
+                        <div class="machine-drip-flat" id="machineDrip"></div>
+                    </div>
+                    <div class="machine-base-flat"></div>
+                </div>
+                <div class="cup-flat" style="position:absolute; bottom:5px; left:50%; transform:translateX(-50%);">
+                    <div class="cup-handle-flat"></div>
+                    <div class="coffee-fill-flat" id="coffeeFill"></div>
+                    <div class="foam-flat" id="foam"></div>
+                    <div class="steam-flat-container" id="steam">
+                        <div class="steam-flat"></div>
+                        <div class="steam-flat"></div>
+                        <div class="steam-flat"></div>
+                    </div>
+                </div>
+            </div>
+            <button class="action-btn" id="brewBtn" disabled onclick="goToStep(5)">Далее</button>
+        </div>
+
+        <!-- Step 5: Complete -->
+        <div class="game-step" id="step5" style="display:none;">
+            <div class="complete-screen show">
+                <div class="complete-icon">☕</div>
+                <h2>Готово!</h2>
+                <p>Ты сварил идеальную чашку кофе!<br>Приезжай в Mr. & Mrs. Coffee за настоящим.</p>
+                <div class="illustration-area" style="margin: 20px auto;">
+                    <div style="display:flex;align-items:center;justify-content:center;height:100%;">
+                        <div style="position:relative;">
+                            <div class="cup-flat" style="position:relative; margin:0 auto;">
+                                <div class="cup-handle-flat"></div>
+                                <div class="coffee-fill-flat pouring"></div>
+                                <div class="foam-flat show"></div>
+                                <div class="steam-flat-container show">
+                                    <div class="steam-flat"></div>
+                                    <div class="steam-flat"></div>
+                                    <div class="steam-flat"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="action-btn" onclick="restartGame()">Играть снова</button>
+                    <a href="index.html" class="action-btn btn-secondary" style="text-decoration:none;">На главную</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let beansCollected = 0;
+        let currentStep = 1;
+
+        function updateProgress(step) {
+            const progress = ((step - 1) / 4) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            for (let i = 1; i <= 5; i++) {
+                const dot = document.getElementById('dot' + i);
+                dot.classList.remove('active', 'done');
+                if (i < step) dot.classList.add('done');
+                if (i === step) dot.classList.add('active');
+            }
+        }
+
+        function collectBean(bean) {
+            if (bean.classList.contains('collected')) return;
+            bean.classList.add('collected');
+            beansCollected++;
+            document.getElementById('beanScore').textContent = beansCollected + ' / 5';
+
+            if (beansCollected >= 5) {
+                setTimeout(() => goToStep(2), 500);
+            }
+        }
+
+        function grindCoffee() {
+            const grinder = document.getElementById('grinderFlat');
+            const ground = document.getElementById('grinderGround');
+            grinder.classList.add('working');
+            ground.classList.add('show');
+            setTimeout(() => {
+                grinder.classList.remove('working');
+            }, 1200);
+            setTimeout(() => {
+                document.getElementById('grindBtn').disabled = false;
+            }, 1200);
+        }
+
+        function fillPortafilter() {
+            const grounds = document.getElementById('portafilterGrounds');
+            grounds.classList.add('filled');
+            document.getElementById('fillBtn').disabled = false;
+        }
+
+        function brewCoffee() {
+            const drip = document.getElementById('machineDrip');
+            const fill = document.getElementById('coffeeFill');
+            const milkBtn = document.getElementById('milkBtn');
+
+            drip.classList.add('pouring');
+
+            setTimeout(() => {
+                fill.classList.add('pouring');
+            }, 500);
+
+            setTimeout(() => {
+                drip.classList.remove('pouring');
+                milkBtn.disabled = false;
+            }, 1800);
+        }
+
+        function addMilk() {
+            const foam = document.getElementById('foam');
+            const steam = document.getElementById('steam');
+            const brewBtn = document.getElementById('brewBtn');
+
+            setTimeout(() => {
+                foam.classList.add('show');
+            }, 200);
+
+            setTimeout(() => {
+                steam.classList.add('show');
+                brewBtn.disabled = false;
+            }, 800);
+        }
+
+        function goToStep(step) {
+            document.getElementById('step' + currentStep).style.display = 'none';
+            document.getElementById('step' + step).style.display = 'block';
+            currentStep = step;
+            updateProgress(step);
+        }
+
+        function restartGame() {
+            beansCollected = 0;
+
+            document.querySelectorAll('.bean-flat').forEach(b => b.classList.remove('collected'));
+            document.getElementById('beanScore').textContent = '0 / 5';
+            document.getElementById('grinderGround').classList.remove('show');
+            document.getElementById('grindBtn').disabled = true;
+            document.getElementById('portafilterGrounds').classList.remove('filled');
+            document.getElementById('fillBtn').disabled = true;
+            document.getElementById('machineDrip').classList.remove('pouring');
+            document.getElementById('coffeeFill').classList.remove('pouring');
+            document.getElementById('foam').classList.remove('show');
+            document.getElementById('milkBtn').disabled = true;
+            document.getElementById('brewBtn').disabled = true;
+            document.getElementById('steam').classList.remove('show');
+
+            document.getElementById('step' + currentStep).style.display = 'none';
+            document.getElementById('step1').style.display = 'block';
+            currentStep = 1;
+            updateProgress(1);
+        }
+
+        updateProgress(1);
+    </script>
+</body>
+</html>
